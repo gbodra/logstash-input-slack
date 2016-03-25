@@ -1,7 +1,6 @@
-# Logstash Plugin
+# Logstash Input Plugin for Slack
 
-[![Build
-Status](http://build-eu-00.elastic.co/view/LS%20Plugins/view/LS%20Inputs/job/logstash-plugin-input-example-unit/badge/icon)](http://build-eu-00.elastic.co/view/LS%20Plugins/view/LS%20Inputs/job/logstash-plugin-input-example-unit/)
+[![Build Status](https://travis-ci.org/gbodra/logstash-input-slack.svg?branch=master)](https://travis-ci.org/gbodra/logstash-input-slack)
 
 This is a plugin for [Logstash](https://github.com/elastic/logstash).
 

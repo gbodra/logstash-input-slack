@@ -2,64 +2,49 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "stud/interval"
-require "socket" # for Socket.gethostname
+require "socket"
 
-# Generate a repeating message.
-#
-# This plugin is intented only as an example.
+# Read events from Slack
 
 class LogStash::Inputs::Slack < LogStash::Inputs::Base
   config_name "slack"
 
-  # JSON codec to read Slack notifications
-  default :codec, "json"
+  # The ip to listen on
+  config :ip, :validate => :string, :default => "0.0.0.0"
 
-  # The message string to use in the event.
-  #config :message, :validate => :string, :default => "Hello World!"
+  # The port to listen on
+  config :port, :validate => :number, :required => true
 
-  # Set how frequently messages should be sent.
-  #
-  # The default, `1`, means send a message every second.
-  #config :interval, :validate => :number, :default => 1
+  # Your Slack Token for the webhook
+  config :secret_token, :validate => :string, :required => false
 
-  # Set on which port our server should listen.
-  config : tcpPort, :validate => :string, :default => 2000
+  # If Secret is defined, we drop the events that don't match.
+  # Otherwise, we'll just add a invalid tag
+  config :drop_invalid, :validate => :boolean
 
-  public
+
   def register
-    #@host = Socket.gethostname
-    @server = TCPServer.open(@tcpPort)
+    require "ftw"
   end # def register
 
-  def run(queue)
-    # we can abort the loop if stop? becomes true
-    while !stop?
-      Thread.start(@server.accept) do |client|
-        client.puts(Time.now.ctime) # Send the time to the client
-        client.puts "Closing the connection. Bye!"
-        puts @server.gets
-        client.close                # Disconnect from the client
-      end
+  public
+  def run(output_queue)
+    @server = FTW::WebServer.new(@ip, @port) do |request, response|
+      body = request.read_body
 
+      event = LogStash::Event.new("message" => body)
 
-      #event = LogStash::Event.new("message" => @message, "host" => @host)
-      #decorate(event)
-      #queue << event
+      decorate(event)
+      output_queue << event
 
-
-      # because the sleep interval can be big, when shutdown happens
-      # we want to be able to abort the sleep
-      # Stud.stoppable_sleep will frequently evaluate the given block
-      # and abort the sleep(@interval) if the return value is true
-      Stud.stoppable_sleep(@interval) { stop? }
-    end # loop
+      response.status = 200
+      response.body = "Accepted!"
+    end
+    @server.run
   end # def run
 
-  def stop
-    # nothing to do in this case so it is not necessary to define stop
-    # examples of common "stop" tasks:
-    #  * close sockets (unblocking blocking reads/accepts)
-    #  * cleanup temporary files
-    #  * terminate spawned threads
-  end
-end # class LogStash::Inputs::Example
+  def close
+    @server.stop
+  end # def close
+
+end # class LogStash::Inputs::Slack
