@@ -100,6 +100,7 @@ PLATFORMS
 DEPENDENCIES
   logstash-devutils (>= 0.0.16)
   logstash-input-slack!
+  rake
 
 BUNDLED WITH
    1.11.2
