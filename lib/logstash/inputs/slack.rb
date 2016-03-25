@@ -22,7 +22,6 @@ class LogStash::Inputs::Slack < LogStash::Inputs::Base
   # Otherwise, we'll just add a invalid tag
   config :drop_invalid, :validate => :boolean
 
-
   def register
     require "ftw"
   end # def register

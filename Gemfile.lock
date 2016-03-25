@@ -2,13 +2,15 @@ PATH
   remote: .
   specs:
     logstash-input-slack (0.0.1)
-      logstash-codec-json
+      ftw (~> 0.0.42)
+      logstash-codec-plain
       logstash-core (>= 2.0.0, < 3.0.0)
-      stud (>= 0.0.22)
 
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.4.0)
+    backports (3.6.8)
     cabin (0.7.2)
     clamp (0.6.5)
     coderay (1.1.1)
@@ -16,15 +18,21 @@ GEM
     diff-lcs (1.2.5)
     ffi (1.9.10-java)
     filesize (0.0.4)
+    ftw (0.0.44)
+      addressable
+      backports (>= 2.6.2)
+      cabin (> 0)
+      http_parser.rb (~> 0.6)
     gem_publisher (1.5.0)
     gems (0.8.3)
+    http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     insist (1.0.0)
     jrjackson (0.3.8)
     jruby-openssl (0.9.13-java)
     kramdown (1.10.0)
-    logstash-codec-json (2.1.1)
-      logstash-core (>= 2.0.0, < 3.0.0)
+    logstash-codec-plain (2.0.4)
+      logstash-core-plugin-api (~> 1.0)
     logstash-core (2.2.2-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
@@ -42,6 +50,8 @@ GEM
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
     logstash-core-event (2.2.2-java)
+    logstash-core-plugin-api (1.1.0-java)
+      logstash-core (>= 2.0.0, <= 2.3.0.snapshot4)
     logstash-devutils (0.0.18-java)
       gem_publisher
       insist (= 1.0.0)
