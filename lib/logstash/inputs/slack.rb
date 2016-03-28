@@ -1,8 +1,8 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "stud/interval"
 require "socket"
+require "ftw"
 
 # Read events from Slack
 
@@ -28,22 +28,40 @@ class LogStash::Inputs::Slack < LogStash::Inputs::Base
 
   public
   def run(output_queue)
-    @server = FTW::WebServer.new(@ip, @port) do |request, response|
-      body = request.read_body
+    server = TCPServer.new(@ip, @port)
+    loop do
+      #TODO (Gustavo): Create a Ruby gem to handle http requests
+      Thread.start(server.accept) do |client|
+        method, path = client.gets.split
+        headers = {}
+        while line = client.gets.split(' ', 2)
+          break if line[0] == ""
+          headers[line[0].chop] = line[1].strip
+        end
+        #TODO (Gustavo): Create a logstash codec to parse POST messages
+        data = client.read(headers["Content-Length"].to_i)
+        body = data.split(/\r\n+/)
+        post_parameters = Hash[body.map {|it| it.split("=",2)}]
 
-      event = LogStash::Event.new("message" => body)
+        if defined? @secret_token && post_parameters["token"]
+          if not @secret_token == post_parameters["token"]
+            @logger.info("Dropping invalid Slack message")
+            drop = true
+          end
+        end
 
-      decorate(event)
-      output_queue << event
+        if not drop
+          decorate(event)
+          output_queue << event
+        end
 
-      response.status = 200
-      response.body = "Accepted!"
-    end
-    @server.run
+        client.puts "Accepted!"
+        client.close
+      end # Thread.start
+    end # loop
   end # def run
 
   def close
-    @server.stop
   end # def close
 
 end # class LogStash::Inputs::Slack

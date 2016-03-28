@@ -1,0 +1,3 @@
+logstash-input-slack-*.gem
+build-install.sh
+test.sh
